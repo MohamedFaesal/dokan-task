@@ -19,13 +19,9 @@ Install these on your machine before you start:
 |------|------------------------|---------|
 | **PHP** | 8.2 or newer | Backend |
 | **Composer** | 2.x | Backend dependencies |
+| **PostgreSQL** | 14+ (15/16 recommended) | Backend database |
 | **Node.js** | **18.12+** (20 LTS is a safe choice) | Frontend — Next.js 16 and `pnpm` need a current Node |
 | **pnpm** | 9.x (or compatible) | Frontend (lockfile is `pnpm-lock.yaml`) |
-
-Optional but useful:
-
-- **SQLite** — nothing to install; Laravel can use a file DB (default in `backend/.env.example`).
-- **PostgreSQL / MySQL** — if you switch `DB_*` in `.env`, use a client you already use for administration.
 
 ---
 
@@ -55,13 +51,26 @@ php artisan key:generate
 Edit **`backend/.env`** and set at least:
 
 - **`APP_URL`** — e.g. `http://127.0.0.1:8000` if you use `php artisan serve` on port 8000.
-- **Database** — default example uses SQLite (`DB_CONNECTION=sqlite`). Ensure the database file exists:
+- **Database (PostgreSQL)** — set these values (and create the DB/user in Postgres):
 
-  ```bash
-  touch database/database.sqlite
-  ```
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=dokan_task
+DB_USERNAME=dokan
+DB_PASSWORD=secret
+```
 
-  If you use **PostgreSQL** or **MySQL**, set `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` accordingly. The DB user must be allowed to run migrations (create tables) on the chosen database.
+Create the database and user (example using `psql` tools):
+
+```bash
+createdb dokan_task
+createuser dokan
+psql -d dokan_task -c "GRANT ALL PRIVILEGES ON DATABASE dokan_task TO dokan;"
+```
+
+Key requirement: the configured DB user must be able to run migrations (create tables) in the **`public`** schema.
 
 **CORS (required so the Next.js app can call the API from another origin):**
 
